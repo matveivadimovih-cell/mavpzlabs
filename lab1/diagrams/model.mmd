@@ -2,6 +2,7 @@ erDiagram
 ВИДАННЯ ||--o{ ПРИМІРНИК : "включає" 
 ЧИТАЧ ||--o{ ВИДАЧА : "бере"
 ПРИМІРНИК ||--o{ ВИДАЧА : "має"
+АВТОР }o--|{ ВИДАННЯ : "написав"
 
 ЧИТАЧ {
     string id PK
@@ -16,6 +17,12 @@ erDiagram
     int publicationYear
     string author
     int amount "похідний"
+}
+
+АВТОР {
+    string id PK
+    string fullName
+    string pseudonym "опціональний"
 }
 
 ПРИМІРНИК {
