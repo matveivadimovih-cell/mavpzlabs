@@ -2,7 +2,7 @@ erDiagram
 ВИДАННЯ ||--o{ ПРИМІРНИК : "включає" 
 ЧИТАЧ ||--o{ ВИДАЧА : "бере"
 ПРИМІРНИК ||--o{ ВИДАЧА : "має"
-АВТОР }o--|{ ВИДАННЯ : "написав"
+АВТОР }|--o{ ВИДАННЯ : "написав"
 
 ЧИТАЧ {
     string id PK
@@ -15,7 +15,6 @@ erDiagram
     string ISBN UK 
     string title
     int publicationYear
-    string author
     int amount "похідний"
 }
 
