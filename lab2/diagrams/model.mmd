@@ -1,0 +1,39 @@
+erDiagram 
+ВИДАННЯ ||--o{ ПРИМІРНИК : "включає" 
+ЧИТАЧ ||--o{ ВИДАЧА : "бере"
+ПРИМІРНИК ||--o{ ВИДАЧА : "має"
+АВТОР }|--o{ ВИДАННЯ : "написав"
+
+ЧИТАЧ {
+    string id PK
+    string telNo UK 
+    string fullName
+}
+
+ВИДАННЯ {
+    string id PK
+    string ISBN UK 
+    string title
+    int publicationYear
+    int amount "похідний"
+}
+
+АВТОР {
+    string id PK
+    string fullName
+    string pseudonym "опціональний"
+}
+
+ПРИМІРНИК {
+    string id PK
+    string condition "стан: good | normal | bad"
+}
+
+ВИДАЧА {
+    string id PK
+    string issueDate
+    string issueEndDate
+    bool isOverdue "похідний"
+    string closedDate "опціональний"
+    string finalCondition "опціональний"
+}
