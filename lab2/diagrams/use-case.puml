@@ -1,0 +1,17 @@
+@startuml
+left to right direction
+
+package "Персонал"{
+    actor "Бібліотекар" as lib
+    actor "Старший бібліотекар" as sLib 
+}
+
+actor "Сервіс білінгу та сповіщень" as bil
+
+sLib -|> lib 
+
+rectangle "Система бібліотеки"{
+
+}
+
+@enduml
