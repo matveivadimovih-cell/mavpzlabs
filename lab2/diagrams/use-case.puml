@@ -6,7 +6,7 @@ package "Персонал"{
     actor "Старший бібліотекар" as sLib 
 }
 
-actor "Сервіс білінгу та сповіщень" as bil
+actor "Сервіс білінгу" as bil
 
 sLib -|> lib 
 
@@ -19,6 +19,13 @@ rectangle "Система бібліотеки"{
     usecase "Видати примірник" as UCIssue
     usecase "Оформити повернення примірника" as UCReturn
     usecase "Зафіксувати погіршення стану примірника" as UCRecord
+    usecase "Надіслати запит на коригування штрафу" as UCManageFines
+
+    usecase "Керувати каталогом видань" as UCManagePublication
+    usecase "Керувати каталогом примірників" as UCManageCopy
+    usecase "Змінити статус читача вручну" as UCChangeReaderStatus
+
+    usecase "Обробити сповіщення про сплату штрафу" as UCNotifyFinePayment
 }
 
 lib --> UCIssue
@@ -26,6 +33,15 @@ lib --> UCReturn
 lib --> UCFindPublication
 lib --> UCRegister
 lib --> UCViewReaderInfo
+
+sLib --> UCManagePublication
+sLib --> UCManageCopy
+sLib --> UCChangeReaderStatus
+sLib --> UCManageFines
+
+UCRecord --> bil
+UCManageFines --> bil
+bil -left-> UCNotifyFinePayment
 
 UCRecord ..> UCReturn : <<extend>>
 UCIssue ..> UCIdentifyReader : <<include>>
