@@ -11,7 +11,21 @@ actor "Сервіс білінгу та сповіщень" as bil
 sLib -|> lib 
 
 rectangle "Система бібліотеки"{
-
+    usecase "Зареєструвати читача" as UCRegister
+    usecase "Ідентифікувати примірник" as UCIdentifyCopy
+    usecase "Перевірити наявність видання" as UCFindPublication
+    usecase "Видати примірник" as UCIssue
+    usecase "Оформити повернення примірника" as UCTake
+    usecase "Зафіксувати погіршення стану примірника" as UCRecord
 }
+
+lib --> UCIssue
+lib --> UCTake
+lib --> UCFindPublication
+lib --> UCRegister
+
+UCRecord ..> UCTake : <<extend>>
+UCIssue ..> UCIdentifyCopy : <<include>>
+UCTake ..> UCIdentifyCopy : <<include>>
 
 @enduml
