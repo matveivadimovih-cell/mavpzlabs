@@ -13,19 +13,24 @@ sLib -|> lib
 rectangle "Система бібліотеки"{
     usecase "Зареєструвати читача" as UCRegister
     usecase "Ідентифікувати примірник" as UCIdentifyCopy
+    usecase "Ідентифікувати читача" as UCIdentifyReader
+    usecase "Переглянути інформацію про читача" as UCViewReaderInfo
     usecase "Перевірити наявність видання" as UCFindPublication
     usecase "Видати примірник" as UCIssue
-    usecase "Оформити повернення примірника" as UCTake
+    usecase "Оформити повернення примірника" as UCReturn
     usecase "Зафіксувати погіршення стану примірника" as UCRecord
 }
 
 lib --> UCIssue
-lib --> UCTake
+lib --> UCReturn
 lib --> UCFindPublication
 lib --> UCRegister
+lib --> UCViewReaderInfo
 
-UCRecord ..> UCTake : <<extend>>
+UCRecord ..> UCReturn : <<extend>>
+UCIssue ..> UCIdentifyReader : <<include>>
+UCViewReaderInfo ..> UCIdentifyReader : <<include>>
 UCIssue ..> UCIdentifyCopy : <<include>>
-UCTake ..> UCIdentifyCopy : <<include>>
+UCReturn ..> UCIdentifyCopy : <<include>>
 
 @enduml
