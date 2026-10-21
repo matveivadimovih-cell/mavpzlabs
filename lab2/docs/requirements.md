@@ -51,3 +51,14 @@ US-03:
 - REQ-BIL-01:
 КОЛИ від Сервісу білінгу надходить повідомлення про успішне погашення всіх заборгованостей читача, система ПОВИННА автоматично змінити статус читача на активний
 
+## Матриця трасування
+
+| ID Вимоги | UCRegister | UCIdentifyReader | UCIdentifyCopy | UCViewReaderInfo | UCFindPublication | UCIssue | UCReturn | UCRecord | UCManageFines | UCManagePublication | UCManageCopy | UCChangeReaderStatus | UCNotifyFinePayment |
+|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|
+| REQ-AUTH-1 | x | x | x | x | x | x | x | x | x | x | x | x | |
+| REQ-AUTH-2 | | | | | | | | | x | x | x | x | |
+| REQ-01 | | x | x | | | x | | | | | | | |
+| REQ-02 | | x | x | | | x | | | | | | | |
+| REQ-RET-01 | | | x | | | | x | | | | | | |
+| REQ-RET-02 | | | x | | | | x | x | | | | | |
+| REQ-BIL-01 | | | | | | | | | | | | | x |
