@@ -15,8 +15,5 @@
 - README.md
 - spec.md
 - DEFENSE.md
-- docs/
-    adr/
-    requirements
-- features/ 
 - diagrams/
+- adr/
