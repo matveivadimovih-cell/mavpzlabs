@@ -88,6 +88,9 @@ US-03:
 - REQ-LOC-01
 Система ПОВИННА відображати всі елементи інтерфейсу користувача, друковані форми видачі, звіти та системні повідомлення про помилки виключно українською мовою з підтримкою збереження текстових полів у кодуванні UTF-8.
 
+- REQ-COMP-01
+Клієнтська частина системи ПОВИННА забезпечувати виконання операцій персоналом на робочих пристроях з обсягом оперативної пам'яті від 4 ГБ та процесором від 2 ядер під керуванням ОС Ubuntu 24.04+ або Windows 10+ у браузерах на базі Chromium або Firefox версій не нижче 115
+
 ## Матриця трасування
 
 | ID Вимоги | UCRegister | UCIdentifyReader | UCIdentifyCopy | UCViewReaderInfo | UCFindPublication | UCIssue | UCReturn | UCRecord | UCManageFines | UCManagePublication | UCManageCopy | UCChangeReaderStatus | UCNotifyFinePayment |
