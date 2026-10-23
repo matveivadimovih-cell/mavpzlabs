@@ -99,6 +99,8 @@ US-03:
 | REQ-RET-01 | | | x | | | | x | | | | | | |
 | REQ-RET-02 | | | x | | | | x | x | | | | | |
 | REQ-BIL-01 | | | | | | | | | | | | | x |
+| REQ-NOT-01 | | | | | | | | | | | x | | |
+| REQ-BLOCK-01 | | | | | | | | | | | x | | |
 
 ### Непокриті кейси
 Кейси UCFindPublication, UCRegister, UCViewReaderInfo мають лише позначку наскрізної автентифікації REQ-AUTH-01 і не деталізуються іншими EARS вимогами.
