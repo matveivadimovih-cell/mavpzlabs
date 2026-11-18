@@ -66,9 +66,9 @@
 
 ### Сценарій 1
 1. Бібліотекар ініціює заповнення форми інформацією про номер телефону читача, айді примірника
-librarian->ui : submitIssue(reader.telNo, copy.id)
+librarian->ui : submitIssue(telNo, copyid)
 2. Веб-клієнт відправляє запит доменному сервісу із наданими номером телефону та айді примірника
-ui->issueService : createIssue(reader.telNo, copy.id)
+ui->issueService : createIssue(telNo, copyid)
 3. Доменний сервіс звертається до шлюзу даних сутності Читач із запитом отримати інформацію про стан, айді читача
 issueService->readerGateway : getInfoByTelNo(reader.telNo)
 readerGateway-->issueService : Reader(id, status, fullName)
@@ -85,12 +85,12 @@ issueGateway-->issueService : false
 issueService->issueGateway : hasReaderActivePublication(reader.id, publication.id)
 issueGateway-->issueService : false
 8. Доменний сервіс звертається до шлюзу даних сутності Видача із запитом створити нову видачу
-issueService->issueGateway : createIssue(reader.id, copy.id, issueDate = current_date, issueEndDate = current_date + defoult_term)
+issueService->issueGateway : createIssue(reader.id, copy.id, issueDate = current_date, issueEndDate = current_date + default_term)
 issueGateway-->issueService : Issue(*)
-9. Доменний сервіс повертає Веб-Клієнту інформацію про створену видачу із атрибутами створеної видачs та статусом запиту
+9. Доменний сервіс повертає Веб-Клієнту інформацію про створену видачу із атрибутами створеної видачі та статусом запиту
 issueService-->ui : IssueResponse(іssue.id, issueDate, issueEndDate, status="SUCCESS")
 10. Веб-клієнт відображає статус запиту створення видачі, інформацію про створену видачу
-ui-->librarian : renderResultSucces(Видачу із ідентифікатором іssue.id успішно оформлено з: " + issueDate + "до: " + issueEndDate)
+ui-->librarian : renderResultSuccess(Видачу із ідентифікатором іssue.id успішно оформлено з: " + issueDate + "до: " + issueEndDate)
 11. Бібліотекар пропонує роздрукувати квитанцію з інформацією про створену видачу, опціонально роздруковує квитанцію
 opt [Читач погодився отримати квитанцію]
     librarian->ui : requestPrintReceipt()
