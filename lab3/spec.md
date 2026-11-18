@@ -84,6 +84,19 @@ issueGateway-->issueService : false
 7. Доменний сервіс звертається до шлюзу даних сутності Видача із запитом отримати інформацію про існування активних видач у читача за виданням
 issueService->issueGateway : hasReaderActivePublication(reader.id, publication.id)
 issueGateway-->issueService : false
+8. Доменний сервіс звертається до шлюзу даних сутності Видача із запитом створити нову видачу
+issueService->issueGateway : createIssue(reader.id, copy.id, issueDate = current_date, issueEndDate = current_date + defoult_term)
+issueGateway-->issueService : Issue(*)
+9. Доменний сервіс повертає Веб-Клієнту інформацію про створену видачу із атрибутами створеної видачs та статусом запиту
+issueService-->ui : IssueResponse(іssue.id, issueDate, issueEndDate, status="SUCCESS")
+10. Веб-клієнт відображає статус запиту створення видачі, інформацію про створену видачу
+ui-->librarian : renderResultSucces(Видачу із ідентифікатором іssue.id успішно оформлено з: " + issueDate + "до: " + issueEndDate)
+11. Бібліотекар пропонує роздрукувати квитанцію з інформацією про створену видачу, опціонально роздруковує квитанцію
+opt [Читач погодився отримати квитанцію]
+    librarian->librarian : print(Видачу із ідентифікатором іssue.id за примірником copy.id на читача fullName оформлено з: " + issueDate + "до: " + issueEndDate)
+end
+
+
 
 
 
