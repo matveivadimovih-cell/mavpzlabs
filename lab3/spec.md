@@ -75,7 +75,15 @@ readerGateway-->issueService : Reader(id, status, fullName)
 4. Доменний сервіс звертається до шлюзу даних сутності Примірник із запитом отримати інформацію про стан примірника, айді видання
 issueService->copyGateway : getInfoByCopyId(copy.id)
 copyGateway-->issueService : Copy(condition, publication.id)
-
+5. Доменний сервіс звертається до шлюзу даних сутності Видача із запитом отримати інформацію про існування прострочень
+issueService->issueGateway : hasReaderOverdue(reader.id)
+issueGateway-->issueService : false
+6. Доменний сервіс звертається до шлюзу даних сутності Видача із запитом отримати інформацію про існування активних видач у примірника
+issueService->issueGateway : isCopyActive(copy.id)
+issueGateway-->issueService : false
+7. Доменний сервіс звертається до шлюзу даних сутності Видача із запитом отримати інформацію про існування активних видач у читача за виданням
+issueService->issueGateway : hasReaderActivePublication(reader.id, publication.id)
+issueGateway-->issueService : false
 
 
 
