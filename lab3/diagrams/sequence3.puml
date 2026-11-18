@@ -1,0 +1,52 @@
+@startuml
+autonumber
+
+actor "Бібліотекар" as librarian
+boundary "Веб-клієнт" as ui
+control "Сервіс видачі" as issueService
+database "Шлюз: Читач" as readerGateway
+database "Шлюз: Примірник" as copyGateway
+database "Шлюз: Видача" as issueGateway
+
+librarian->ui : submitIssue(telNo, copyid)
+activate ui
+
+ui->issueService : createIssue(telNo, copyid)
+activate issueService
+
+issueService->readerGateway : getInfoByTelNo(telNo)
+activate readerGateway
+readerGateway-->issueService : Reader(id, status, fullName)
+deactivate readerGateway
+
+issueService->copyGateway : getInfoByCopyId(copy.id)
+activate copyGateway
+copyGateway-->issueService : Copy(condition, publication.id)
+deactivate copyGateway
+
+issueService->issueGateway : isCopyActive(copy.id)
+activate issueGateway
+issueGateway-->issueService : isCopyActiveResponse
+deactivate issueGateway
+
+alt [isCopyActiveResponse == true]
+    issueService->issueService : setRejectionReason("Примірник має активну видачу", "REJECTED_ISSUE_ACTIVE")
+else [isCopyActiveResponse == false]
+    issueService->issueGateway : getActiveIssuesByReader(reader.id)
+    activate issueGateway
+    issueGateway-->issueService : List<IssueJoinCopyPublication>
+    deactivate issueGateway
+    loop [для кожної issue в List<IssueJoinCopyPublication>]
+        break issuePublicationId == targetPublication.id
+            issueService->issueService : setRejectionReason("Читач має активну видачу за виданням примірника", "REJECTED_HAS_PUBL")
+        end
+    end
+end
+
+issueService-->ui : IssueErrorResponse(reasonMessage, errorCode)
+deactivate issueService
+
+ui-->librarian : renderErrorNotification(reasonMessage)
+deactivate ui
+
+@enduml

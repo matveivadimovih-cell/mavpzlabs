@@ -1,0 +1,45 @@
+@startuml
+autonumber
+
+actor "Бібліотекар" as librarian
+boundary "Веб-клієнт" as ui
+control "Сервіс видачі" as issueService
+database "Шлюз: Читач" as readerGateway
+database "Шлюз: Примірник" as copyGateway
+database "Шлюз: Видача" as issueGateway
+
+librarian->ui : submitIssue(telNo, copyid)
+activate ui
+
+ui->issueService : createIssue(telNo, copyid)
+activate issueService
+
+issueService->readerGateway : getInfoByTelNo(telNo)
+activate readerGateway
+readerGateway-->issueService : Reader(id, status, fullName)
+deactivate readerGateway
+
+alt [reader.status == "blocked"]
+    issueService->issueService : setRejectionReason("Читач заблокований через несплачені штрафи", "REJECTED_BLOCKED")
+else [reader.status == "active"]
+    issueService->issueGateway : getActiveIssuesByReader(reader.id)
+    activate issueGateway
+    issueGateway-->issueService : List<IssueJoinCopyPublication>
+    deactivate issueGateway
+
+    loop [Поки не знайдено прострочення]
+        break issue.issueEndDate < current_date
+            issueService->issueService : setRejectionReason("У читача є неповернуті прострочені книги", "REJECTED_OVERDUE")
+        end
+    end
+
+end
+
+issueService-->ui : IssueErrorResponse(reasonMessage, errorCode)
+deactivate issueService
+
+ui-->librarian : renderErrorNotification(reasonMessage)
+deactivate ui
+
+
+@enduml
