@@ -67,30 +67,42 @@
 ### Сценарій 1
 1. Бібліотекар ініціює заповнення форми інформацією про номер телефону читача, айді примірника
 librarian->ui : submitIssue(telNo, copyid)
+
 2. Веб-клієнт відправляє запит доменному сервісу із наданими номером телефону та айді примірника
 ui->issueService : createIssue(telNo, copyid)
+
 3. Доменний сервіс звертається до шлюзу даних сутності Читач із запитом отримати інформацію про стан, айді читача
 issueService->readerGateway : getInfoByTelNo(reader.telNo)
 readerGateway-->issueService : Reader(id, status, fullName)
+
 4. Доменний сервіс звертається до шлюзу даних сутності Примірник із запитом отримати інформацію про стан примірника, айді видання
 issueService->copyGateway : getInfoByCopyId(copy.id)
 copyGateway-->issueService : Copy(condition, publication.id)
-5. Доменний сервіс звертається до шлюзу даних сутності Видача із запитом отримати інформацію про існування прострочень
-issueService->issueGateway : hasReaderOverdue(reader.id)
-issueGateway-->issueService : false
-6. Доменний сервіс звертається до шлюзу даних сутності Видача із запитом отримати інформацію про існування активних видач у примірника
+
+5. Доменний сервіс звертається до шлюзу даних сутності Видача із запитом отримати інформацію про всі активні видачі читача
+issueService->issueGateway : getActiveIssuesByReader(reader.id)
+issueGateway-->issueService : List<IssueJoinCopyPublication>
+
+6. Доменний сервіс у циклі перевіряє кожну видачу читача на прострочення та збіг видання
+loop [для кожної issue в List<IssueJoinCopyPublication>]
+    issueService->issueService : verifyNotOverdue(issue.issueEndDate, current_date)
+    issueService->issueService : verifyNotSamePublication(issuePublicationId, targetPublication.id)
+end
+
+7. Доменний сервіс звертається до шлюзу даних сутності Видача із запитом отримати інформацію про існування активних видач у примірника
 issueService->issueGateway : isCopyActive(copy.id)
 issueGateway-->issueService : false
-7. Доменний сервіс звертається до шлюзу даних сутності Видача із запитом отримати інформацію про існування активних видач у читача за виданням
-issueService->issueGateway : hasReaderActivePublication(reader.id, publication.id)
-issueGateway-->issueService : false
+
 8. Доменний сервіс звертається до шлюзу даних сутності Видача із запитом створити нову видачу
 issueService->issueGateway : createIssue(reader.id, copy.id, issueDate = current_date, issueEndDate = current_date + default_term)
 issueGateway-->issueService : Issue(*)
+
 9. Доменний сервіс повертає Веб-Клієнту інформацію про створену видачу із атрибутами створеної видачі та статусом запиту
 issueService-->ui : IssueResponse(іssue.id, issueDate, issueEndDate, status="SUCCESS")
+
 10. Веб-клієнт відображає статус запиту створення видачі, інформацію про створену видачу
 ui-->librarian : renderResultSuccess(Видачу із ідентифікатором іssue.id успішно оформлено з: " + issueDate + "до: " + issueEndDate)
+
 11. Бібліотекар пропонує роздрукувати квитанцію з інформацією про створену видачу, опціонально роздруковує квитанцію
 opt [Читач погодився отримати квитанцію]
     librarian->ui : requestPrintReceipt()
@@ -100,22 +112,32 @@ end
 
 ### Сценарій 2
 1. Бібліотекар ініціює заповнення форми інформацією про номер телефону читача, айді примірника
+
 librarian->ui : submitIssue(telNo, copyid)
 2. Веб-клієнт відправляє запит доменному сервісу із наданими номером телефону та айді примірника
 ui->issueService : createIssue(telNo, copyid)
+
 3. Доменний сервіс звертається до шлюзу даних сутності Читач із запитом отримати інформацію про стан, айді читача
 issueService->readerGateway : getInfoByTelNo(reader.telNo)
 readerGateway-->issueService : Reader(id, status, fullName)
+
 4. Перевірка обмежень читача
 alt [reader.status == "blocked"]
     issueService->issueService : setRejectionReason("Читач заблокований через несплачені штрафи", "REJECTED_BLOCKED")
 else [reader.status == "active"]
-    issueService->issueGateway : hasReaderOverdue(reader.id)
-    issueGateway-->issueService : true
-    issueService->issueService : setRejectionReason("У читача є неповернуті прострочені книги", "REJECTED_OVERDUE")
+    issueService->issueGateway : getActiveIssuesByReader(reader.id)
+    issueGateway-->issueService : List<IssueJoinCopyPublication>
+    loop [Поки не знайдено прострочення]
+        alt [issue.issueEndDate < current_date]
+            issueService->issueService : setRejectionReason("У читача є неповернуті прострочені книги", "REJECTED_OVERDUE")
+            [break]
+        end
+    end
 end
+
 5. Доменний сервіс повертає веб-сервісу у відповідь текст і код помилки 
 issueService-->ui : IssueErrorResponse(reasonMessage, errorCode)
+
 6. Веб-сервіс відображає текс та код помилки бібліотекарю
 ui-->librarian : renderErrorNotification(reasonMessage)
 
@@ -123,31 +145,40 @@ ui-->librarian : renderErrorNotification(reasonMessage)
 ### Сценарій 3
 1. Бібліотекар ініціює заповнення форми інформацією про номер телефону читача, айді примірника
 librarian->ui : submitIssue(telNo, copyid)
+
 2. Веб-клієнт відправляє запит доменному сервісу із наданими номером телефону та айді примірника
 ui->issueService : createIssue(telNo, copyid)
+
 3. Доменний сервіс звертається до шлюзу даних сутності Читач із запитом отримати інформацію про стан, айді читача
 issueService->readerGateway : getInfoByTelNo(reader.telNo)
 readerGateway-->issueService : Reader(id, status, fullName)
+
 4. Доменний сервіс звертається до шлюзу даних сутності Примірник із запитом отримати інформацію про стан примірника, айді видання
 issueService->copyGateway : getInfoByCopyId(copy.id)
 copyGateway-->issueService : Copy(condition, publication.id)
-5. Доменний сервіс звертається до шлюзу даних сутності Видача із запитом отримати інформацію про існування прострочень
-issueService->issueGateway : hasReaderOverdue(reader.id)
-issueGateway-->issueService : false
-6. Доменний сервіс звертається до шлюзу даних сутності Видача із запитом отримати інформацію про існування активних видач у примірника
+
+5. Доменний сервіс звертається до шлюзу даних сутності Видача із запитом отримати інформацію про існування активних видач у примірника
 issueService->issueGateway : isCopyActive(copy.id)
 issueGateway-->issueService : isCopyActiveResponse
-7. Перевірка активних видач примірника та видач з виданням у читача
+
+6. Перевірка активних видач примірника та видач з виданням у читача
 alt [isCopyActiveResponse == true]
     issueService->issueService : setRejectionReason("Примірник має активну видачу", "REJECTED_ISSUE_ACTIVE")
 else [isCopyActiveResponse == false]
-    issueService->issueGateway : hasReaderActivePublication(reader.id, publication.id)
-    issueGateway-->issueService : true
-    issueService->issueService : setRejectionReason("Читач має активну видачу за виданням примірника", "REJECTED_HAS_PUBL")
+    issueService->issueGateway : getActiveIssuesByReader(reader.id)
+    issueGateway-->issueService : List<IssueJoinCopyPublication>
+    loop [для кожної issue в List<IssueJoinCopyPublication>]
+        alt [issuePublicationId == targetPublication.id]
+            issueService->issueService : setRejectionReason("Читач має активну видачу за виданням примірника", "REJECTED_HAS_PUBL")
+            [break]
+        end
+    end
 end
-8. Доменний сервіс повертає веб-сервісу у відповідь текст і код помилки 
+
+7. Доменний сервіс повертає веб-сервісу у відповідь текст і код помилки 
 issueService-->ui : IssueErrorResponse(reasonMessage, errorCode)
-9. Веб-сервіс відображає текс та код помилки бібліотекарю
+
+8. Веб-сервіс відображає текс та код помилки бібліотекарю
 ui-->librarian : renderErrorNotification(reasonMessage)
 
 
