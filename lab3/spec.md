@@ -120,6 +120,36 @@ issueService-->ui : IssueErrorResponse(reasonMessage, errorCode)
 ui-->librarian : renderErrorNotification(reasonMessage)
 
 
+### Сценарій 3
+1. Бібліотекар ініціює заповнення форми інформацією про номер телефону читача, айді примірника
+librarian->ui : submitIssue(telNo, copyid)
+2. Веб-клієнт відправляє запит доменному сервісу із наданими номером телефону та айді примірника
+ui->issueService : createIssue(telNo, copyid)
+3. Доменний сервіс звертається до шлюзу даних сутності Читач із запитом отримати інформацію про стан, айді читача
+issueService->readerGateway : getInfoByTelNo(reader.telNo)
+readerGateway-->issueService : Reader(id, status, fullName)
+4. Доменний сервіс звертається до шлюзу даних сутності Примірник із запитом отримати інформацію про стан примірника, айді видання
+issueService->copyGateway : getInfoByCopyId(copy.id)
+copyGateway-->issueService : Copy(condition, publication.id)
+5. Доменний сервіс звертається до шлюзу даних сутності Видача із запитом отримати інформацію про існування прострочень
+issueService->issueGateway : hasReaderOverdue(reader.id)
+issueGateway-->issueService : false
+6. Доменний сервіс звертається до шлюзу даних сутності Видача із запитом отримати інформацію про існування активних видач у примірника
+issueService->issueGateway : isCopyActive(copy.id)
+issueGateway-->issueService : isCopyActiveResponse
+7. Перевірка активних видач примірника та видач з виданням у читача
+alt [isCopyActiveResponse == true]
+    issueService->issueService : setRejectionReason("Примірник має активну видачу", "REJECTED_ISSUE_ACTIVE")
+else [isCopyActiveResponse == false]
+    issueService->issueGateway : hasReaderActivePublication(reader.id, publication.id)
+    issueGateway-->issueService : true
+    issueService->issueService : setRejectionReason("Читач має активну видачу за виданням примірника", "REJECTED_HAS_PUBL")
+end
+8. Доменний сервіс повертає веб-сервісу у відповідь текст і код помилки 
+issueService-->ui : IssueErrorResponse(reasonMessage, errorCode)
+9. Веб-сервіс відображає текс та код помилки бібліотекарю
+ui-->librarian : renderErrorNotification(reasonMessage)
+
 
 ## Критерії прийняття
 - Для кожного описаного в специфікації сценарію побудовано окрему діаграму послідовності
