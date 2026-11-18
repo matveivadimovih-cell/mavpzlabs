@@ -1,0 +1,61 @@
+@startuml
+autonumber
+
+actor "Бібліотекар" as librarian
+boundary "Веб-клієнт" as ui
+control "Сервіс видачі" as issueService
+database "Шлюз: Читач" as readerGateway
+database "Шлюз: Примірник" as copyGateway
+database "Шлюз: Видача" as issueGateway
+
+librarian->ui : submitIssue(telNo, copyid)
+activate ui
+
+ui->issueService : createIssue(telNo, copyid)
+activate issueService
+
+issueService->readerGateway : getInfoByTelNo(telNo)
+activate readerGateway
+readerGateway-->issueService : Reader(id, status, fullName)
+deactivate readerGateway
+
+issueService->copyGateway : getInfoByCopyId(copy.id)
+activate copyGateway
+copyGateway-->issueService : Copy(condition, publication.id)
+deactivate copyGateway
+
+issueService->issueGateway : getActiveIssuesByReader(reader.id)
+activate issueGateway
+issueGateway-->issueService : List<IssueJoinCopyPublication>
+deactivate issueGateway
+
+loop [для кожної issue в List<IssueJoinCopyPublication>]
+    issueService->issueService : verifyNotOverdue(issue.issueEndDate, current_date)
+    issueService->issueService : verifyNotSamePublication(issuePublicationId, targetPublication.id)
+end
+
+issueService->issueGateway : isCopyActive(copy.id)
+activate issueGateway
+issueGateway-->issueService : false
+deactivate issueGateway
+
+issueService->issueGateway : createIssue(reader.id, copy.id, issueDate = current_date, issueEndDate = current_date + default_term)
+activate issueGateway
+issueGateway-->issueService : Issue(*)
+deactivate issueGateway
+
+issueService-->ui : IssueResponse(issue.id, issueDate, issueEndDate, status="SUCCESS")
+deactivate issueService
+
+ui-->librarian : renderResultSuccess(issue.id, copy.id, reader.fullName, issueDate, issueEndDate)
+deactivate ui
+
+opt [Читач погодився отримати квитанцію]
+    librarian->ui : requestPrintReceipt()
+    activate ui
+    ui->ui : generatePrintForm(issue.id, copy.id, reader.fullName, issueDate, issueEndDate)
+    ui-->librarian : openPrintDialog()
+    deactivate ui
+end
+
+@enduml
