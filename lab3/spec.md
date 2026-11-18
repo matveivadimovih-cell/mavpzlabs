@@ -54,7 +54,7 @@
 - Назва на діаграмі: copyGateway
 - Тип: Data Gateway
 - Зона відповідальності: Прийняття запитів від доменного сервісу, надсилання інформації щодо сутності Примірник, Видання, Автор у відповідь на запити
-- Зв'язок із завданням 1: Працює іх сутністю Примірник із моделі даних, із атрибутами condition, id. Працює із сутністю Видання через зв'язок із сутністю Примірник, із атрибутами id, ISBN, title, publicationYear, amount. Працює із сутністю Автор через транзитивний зв'язок Примірник -> Видання -> Автор, із атрибутами id, fullName, pseudonym
+- Зв'язок із завданням 1: Працює іх сутністю Примірник із моделі даних, із атрибутами condition, id. Працює із сутністю Видання через зв'язок із сутністю Примірник, із атрибутами id, ISBN, title, publicationYear, amount. Працює із сутністю Автор через транзитивний зв'язок Примірник->Видання->Автор, із атрибутами id, fullName, pseudonym
 
 ### Шлюз даних "Видача" 
 - Назва на діаграмі: issueGateway
@@ -105,7 +105,19 @@ librarian->ui : submitIssue(telNo, copyid)
 ui->issueService : createIssue(telNo, copyid)
 3. Доменний сервіс звертається до шлюзу даних сутності Читач із запитом отримати інформацію про стан, айді читача
 issueService->readerGateway : getInfoByTelNo(reader.telNo)
-readerGateway-->issueService : Reader(id, status = 'blocked", fullName)
+readerGateway-->issueService : Reader(id, status, fullName)
+4. Перевірка обмежень читача
+alt [reader.status == "blocked"]
+    issueService->issueService : setRejectionReason("Читач заблокований через несплачені штрафи", "REJECTED_BLOCKED")
+else [reader.status == "active"]
+    issueService->issueGateway : hasReaderOverdue(reader.id)
+    issueGateway-->issueService : true
+    issueService->issueService : setRejectionReason("У читача є неповернуті прострочені книги", "REJECTED_OVERDUE")
+end
+5. Доменний сервіс повертає веб-сервісу у відповідь текст і код помилки 
+issueService-->ui : IssueErrorResponse(reasonMessage, errorCode)
+6. Веб-сервіс відображає текс та код помилки бібліотекарю
+ui-->librarian : renderErrorNotification(reasonMessage)
 
 
 
