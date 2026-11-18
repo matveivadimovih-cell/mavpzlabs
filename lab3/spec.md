@@ -67,6 +67,11 @@
 ### Сценарій 1
 1. Бібліотекар ініціює заповнення форми інформацією про номер телефону читача, айді примірника
 librarian->ui : submitIssue(reader.telNo, copy.id)
+2. Веб-клієнт відправляє запит доменному сервісу із наданими номером телефону та айді примірника
+ui->issueService : createIssue(reader.telNo, copy.id)
+3. Доменний сервіс звертається да шлюзу даних сутності Читач із запитом отримати інформацію про стан, айді читача
+issueService->readerGateway : getInfoByTelNo(reader.telNo)
+readerGateway-->issueService : Reader(id, status="active", fullName)
 
 
 ## Критерії прийняття
