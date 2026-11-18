@@ -93,7 +93,9 @@ issueService-->ui : IssueResponse(іssue.id, issueDate, issueEndDate, status="SU
 ui-->librarian : renderResultSucces(Видачу із ідентифікатором іssue.id успішно оформлено з: " + issueDate + "до: " + issueEndDate)
 11. Бібліотекар пропонує роздрукувати квитанцію з інформацією про створену видачу, опціонально роздруковує квитанцію
 opt [Читач погодився отримати квитанцію]
-    librarian->librarian : print(Видачу із ідентифікатором іssue.id за примірником copy.id на читача fullName оформлено з: " + issueDate + "до: " + issueEndDate)
+    librarian->ui : requestPrintReceipt()
+    ui->ui : generatePrintForm(Видачу із ідентифікатором іssue.id за примірником copy.id на читача reader.fullName оформлено з: " + issueDate + "до: " + issueEndDate)
+    ui-->librarian : openPrintDialog()
 end
 
 
